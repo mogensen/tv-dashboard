@@ -6,7 +6,8 @@
 
 # Config:
 
-RESOLUTION_X=`xdpyinfo | grep dimensions | awk '{ print $2 }' | sed 's/x.*//'`
+RESOLUTION_X_FULL=`xdpyinfo | grep dimensions | awk '{ print $2 }' | sed 's/x.*//'`
+RESOLUTION_X=$(($RESOLUTION_X_FULL / 2))
 RESOLUTION_Y=`xdpyinfo | grep dimensions | awk '{ print $2 }' | sed 's/.*x//'`
 
 TAB_SWITCH_INTERVAL=30
@@ -32,8 +33,20 @@ chromium-browser --window-size=${RESOLUTION_X},${RESOLUTION_Y} --window-position
     --disable-infobars \
     --disable-session-crashed-bubble \
     --disable-suggestions-service \
+    --user-data-dir=/home/pi/Documents/Profiles/0 \
     --kiosk \
-    $( grep -v '^#' $SOURCE_DIR/urls.txt | tr '\n' ' ' ) &
+    $( grep -v '^#' $SOURCE_DIR/urls-0.txt | tr '\n' ' ' ) &
+
+chromium-browser --window-size=${RESOLUTION_X},${RESOLUTION_Y} --window-position=${RESOLUTION_X},0 --start-maximized \
+    --fast --fast-start \
+    --no-first-run \
+    --noerrdialogs \
+    --disable-infobars \
+    --disable-session-crashed-bubble \
+    --disable-suggestions-service \
+    --user-data-dir=/home/pi/Documents/Profiles/1 \
+    --kiosk \
+    $( grep -v '^#' $SOURCE_DIR/urls-1.txt | tr '\n' ' ' ) &
 
 PID=$!
 
@@ -52,21 +65,21 @@ PID=$!
 #done
 
 # While PID is running cycle through tabs
-i=1
-while [ -n "$( ps -p $PID -o pid= )" ]
-do
-  sleep ${TAB_SWITCH_INTERVAL}
+# i=1
+# while [ -n "$( ps -p $PID -o pid= )" ]
+# do
+#   sleep ${TAB_SWITCH_INTERVAL}
 
-  # Refresh at regular intervals
-  if [ $(( $i % 13 )) -eq 0 ] || [ $(( $i % 17 )) -eq 0 ]
-  then
-    timeout 10 xdotool search --sync --onlyvisible --class "chromium-browser" key ctrl+shift+r
-    sleep 1
-  fi
+#   # Refresh at regular intervals
+#   if [ $(( $i % 13 )) -eq 0 ] || [ $(( $i % 17 )) -eq 0 ]
+#   then
+#     timeout 10 xdotool search --sync --onlyvisible --class "chromium-browser" key ctrl+shift+r
+#     sleep 1
+#   fi
 
-  timeout 10 xdotool search --sync --onlyvisible --class "chromium-browser" key ctrl+Tab
+#   timeout 10 xdotool search --sync --onlyvisible --class "chromium-browser" key ctrl+Tab
 
-  i=$(( $i + 1 ))
-done
+#   i=$(( $i + 1 ))
+# done
 
 wait $PID
